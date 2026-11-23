@@ -8,7 +8,7 @@ const version = ref<{ minVersion: string; upgradeRequired: boolean; message?: st
 const status = ref('检测主仓库连接中…');
 
 onMounted(async () => {
-  loggedIn.value = !!restoreToken();
+  loggedIn.value = !!(await restoreToken());
   try {
     const r = await checkVersion();
     version.value = r;

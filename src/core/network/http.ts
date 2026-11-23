@@ -1,17 +1,26 @@
-import { API_BASE, CLIENT_HEADERS, CLIENT_IDENTITY } from './config'
+import { invoke } from '@tauri-apps/api/core'
 
-const TOKEN_KEY = 'mc_token'
+import { API_BASE, CLIENT_HEADERS, CLIENT_IDENTITY } from './config'
 
 let token: string | null = null
 
-export function setToken(t: string | null) {
+/** 令牌只存系统钥匙串（Windows 凭据管理器 / macOS Keychain / Linux Secret Service）；
+ *  纯浏览器 dev（npm run dev）无 Tauri runtime 时回退内存态，不写 localStorage。 */
+export async function setToken(t: string | null) {
   token = t
-  if (t) localStorage.setItem(TOKEN_KEY, t)
-  else localStorage.removeItem(TOKEN_KEY)
+  try {
+    await invoke(t ? 'save_token' : 'clear_token', t ? { token: t } : {})
+  } catch {
+    // 钥匙串不可用（如浏览器 dev）时不阻断登录流程，仅内存持有
+  }
 }
 
-export function restoreToken() {
-  token = localStorage.getItem(TOKEN_KEY)
+export async function restoreToken(): Promise<string | null> {
+  try {
+    token = await invoke<string | null>('load_token')
+  } catch {
+    token = null
+  }
   return token
 }
 

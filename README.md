@@ -32,6 +32,11 @@ src-tauri/           Rust 侧（Tauri 2）
 
 `identifier` 为 `com.modernchat.desktop`，与主仓库移动端 `com.modernchat` 前缀一致。
 
+## 安全约定
+
+- **访问令牌只存系统钥匙串**：`save_token` / `load_token` / `clear_token` 三个 Tauri 命令走 Rust `keyring`（Windows 凭据管理器 / macOS Keychain / Linux Secret Service）；**不写 localStorage、不写日志文件**。纯浏览器 `npm run dev` 无 Tauri runtime 时只留内存态，刷新即失效。
+- 扫码登录票据经 POST body 轮询，不进 URL；二维码载荷里的票据 5 分钟一次性，服务端首轮询即消费。
+
 ## 后续接入
 
 当前仅完成骨架，尚未接入主仓库的业务逻辑。接入时需要决定：

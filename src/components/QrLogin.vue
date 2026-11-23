@@ -58,7 +58,7 @@ async function poll() {
     if (disposed) return;
     if (r.status === 'confirmed' && r.token) {
       stopTimers();
-      setToken(r.token);
+      await setToken(r.token);
       message.value = '登录成功';
       emit('logged-in');
       return;
