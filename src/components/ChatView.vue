@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 import { useChat } from '../composables/useChat'
-import { CLIENT_IDENTITY, currentToken, setToken } from '../core/network'
+import { CLIENT_IDENTITY, currentToken, setToken, type Message } from '../core/network'
 
 const emit = defineEmits<{ (e: 'logged-out'): void }>()
 const draft = ref('')
+const editingId = ref<number | null>(null)
+const editingText = ref('')
+const menuFor = ref<number | null>(null)
 
 const {
   conversations,
@@ -13,15 +16,27 @@ const {
   activeId,
   messages,
   loading,
+  replyTarget,
+  typingUntil,
+  lastError,
   start,
   openConversation,
   sendText,
+  recallMessage,
+  editMessage,
+  notifyTyping,
 } = useChat(() => {
   void setToken(null)
   emit('logged-out')
 })
 
 onMounted(start)
+
+const typingNames = computed(() =>
+  Object.entries(typingUntil.value)
+    .filter(([, until]) => until > Date.now())
+    .map(([uid]) => `用户 ${uid}`),
+)
 
 function send() {
   const text = draft.value
@@ -30,8 +45,34 @@ function send() {
   draft.value = ''
 }
 
+function onDraftInput() {
+  notifyTyping()
+}
+
 function displayName(c: { id: number; name: string; peer?: { nickname: string } }) {
   return c.peer?.nickname || c.name || `会话 ${c.id}`
+}
+
+function quote(m: Message) {
+  replyTarget.value = m
+  menuFor.value = null
+}
+
+function beginEdit(m: Message) {
+  editingId.value = m.id
+  editingText.value = m.content
+  menuFor.value = null
+}
+
+function commitEdit() {
+  if (editingId.value === null) return
+  editMessage(editingId.value, editingText.value)
+  editingId.value = null
+}
+
+function doRecall(m: Message) {
+  recallMessage(m.id)
+  menuFor.value = null
 }
 
 function logout() {
@@ -57,7 +98,10 @@ function logout() {
           :class="{ 'is-active': c.id === activeId }"
           @click="openConversation(c.id)"
         >
-          <span class="chat__item-name">{{ displayName(c) }}</span>
+          <span class="chat__item-name">
+            {{ displayName(c) }}
+            <span v-if="c.unreadCount" class="chat__unread num">{{ c.unreadCount }}</span>
+          </span>
           <span class="chat__item-preview">{{ c.lastMessagePreview || '暂无消息' }}</span>
         </button>
         <p v-if="!conversations.length" class="chat__empty">暂无会话</p>
@@ -79,14 +123,44 @@ function logout() {
           <div
             v-for="m in messages"
             :key="m.clientMsgId || m.id"
-            class="chat__bubble"
-            :class="{ 'is-mine': m.senderId === myId, 'is-pending': m.pending }"
+            class="chat__bubble-wrap"
+            :class="{ 'is-mine': m.senderId === myId }"
           >
-            <span class="chat__bubble-content">{{ m.content }}</span>
+            <div
+              class="chat__bubble"
+              :class="{ 'is-pending': m.pending, 'is-failed': m.failed }"
+              @click="menuFor = menuFor === m.id ? null : m.id"
+            >
+              <span v-if="m.replyTo && !m.isRecalled" class="chat__quote">
+                {{ m.replyTo.senderNickname }}：{{ m.replyTo.content || '[媒体]' }}
+              </span>
+              <span class="chat__bubble-content">
+                {{ m.isRecalled ? '消息已撤回' : m.content }}
+              </span>
+              <span v-if="m.editedAt && !m.isRecalled" class="chat__edited">已编辑</span>
+            </div>
+            <div v-if="menuFor === m.id && m.id > 0 && !m.isRecalled" class="chat__menu">
+              <button type="button" @click="quote(m)">引用</button>
+              <template v-if="m.senderId === myId">
+                <button v-if="m.msgType === 'text'" type="button" @click="beginEdit(m)">编辑</button>
+                <button type="button" @click="doRecall(m)">撤回</button>
+              </template>
+            </div>
+            <div v-if="editingId === m.id" class="chat__editbar">
+              <input v-model="editingText" class="chat__input" @keyup.enter="commitEdit" />
+              <button type="button" class="chat__link" @click="commitEdit">保存</button>
+              <button type="button" class="chat__link" @click="editingId = null">取消</button>
+            </div>
           </div>
         </div>
+        <p v-if="lastError" class="chat__error">{{ lastError }}</p>
+        <p v-if="typingNames.length" class="chat__typing">{{ typingNames.join('、') }} 正在输入…</p>
+        <div v-if="replyTarget" class="chat__replybar">
+          <span>引用：{{ replyTarget.content || '[媒体]' }}</span>
+          <button type="button" class="chat__link" @click="replyTarget = null">取消</button>
+        </div>
         <form class="chat__composer" @submit.prevent="send">
-          <input v-model="draft" class="chat__input" placeholder="输入消息…" />
+          <input v-model="draft" class="chat__input" placeholder="输入消息…" @input="onDraftInput" />
           <button type="submit" class="chat__send" :disabled="!draft.trim()">发送</button>
         </form>
       </template>
@@ -207,23 +281,105 @@ function logout() {
   gap: 8px;
 }
 
-.chat__bubble {
+.chat__bubble-wrap {
   max-width: 70%;
   align-self: flex-start;
+}
+
+.chat__bubble-wrap.is-mine {
+  align-self: flex-end;
+}
+
+.chat__bubble {
   padding: 8px 12px;
   border-radius: var(--mc-radius-md);
   background: var(--mc-bg-container);
   font-size: var(--mc-fs-body);
+  cursor: pointer;
 }
 
-.chat__bubble.is-mine {
-  align-self: flex-end;
+.chat__bubble-wrap.is-mine .chat__bubble {
   background: var(--mc-brand);
   color: #fff;
 }
 
+.chat__quote {
+  display: block;
+  margin-bottom: 4px;
+  padding-left: 8px;
+  border-left: 2px solid currentColor;
+  font-size: var(--mc-fs-sm);
+  opacity: 0.75;
+}
+
+.chat__edited,
+.chat__typing,
+.chat__replybar {
+  font-size: var(--mc-fs-sm);
+  color: var(--mc-text-faint);
+}
+
+.chat__edited {
+  opacity: 0.7;
+}
+
+.chat__typing {
+  margin: 0;
+  padding: 0 16px 4px;
+}
+
+.chat__replybar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: var(--mc-bg-raised);
+}
+
+.chat__menu {
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.chat__menu button {
+  border: none;
+  background: none;
+  color: var(--mc-link);
+  cursor: pointer;
+  font-size: var(--mc-fs-sm);
+}
+
+.chat__editbar {
+  display: flex;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.chat__unread {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: var(--mc-radius-pill);
+  background: var(--mc-danger);
+  color: #fff;
+  font-size: var(--mc-fs-caption);
+}
+
 .chat__bubble.is-pending {
   opacity: 0.6;
+}
+
+.chat__bubble.is-failed {
+  opacity: 0.6;
+  outline: 1px solid var(--mc-danger);
+}
+
+.chat__error {
+  margin: 0;
+  padding: 4px 16px;
+  font-size: var(--mc-fs-sm);
+  color: var(--mc-danger);
 }
 
 .chat__composer {

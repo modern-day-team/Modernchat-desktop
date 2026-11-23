@@ -51,10 +51,21 @@ export interface Conversation {
   type: number // 1=单聊 2=群聊 3=系统公告（不展示）
   name: string
   peer?: { id: number; nickname: string; avatarColor?: string }
+  lastMessageId?: number
   lastMessagePreview?: string
   lastMessageAt?: string
   unreadCount?: number
   pinned?: boolean
+}
+
+/** 引用消息摘要（与 proto.ts ReplyBrief 对齐）。 */
+export interface ReplyBrief {
+  id: number
+  senderId: number
+  senderNickname: string
+  msgType: string
+  content: string
+  isRecalled: boolean
 }
 
 export interface Message {
@@ -65,8 +76,21 @@ export interface Message {
   msgType: string
   content: string
   createdAt: string
+  replyToId?: number
+  replyTo?: ReplyBrief
+  isRecalled?: boolean
+  recalledAt?: string
+  editedAt?: string
   pending?: boolean
   failed?: boolean
+}
+
+/** 标记已读（REST 兜底，WS read 帧为实时通道）。 */
+export function markRead(convId: number, upToId: number) {
+  return request<{ ok: boolean }>(`/conversations/${convId}/read`, {
+    method: 'POST',
+    body: JSON.stringify({ upToId }),
+  })
 }
 
 export function listConversations() {
