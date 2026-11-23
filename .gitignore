@@ -1,3 +1,10 @@
+# Agent 协作文件（本地专用，永不入库）
+AGENTS.md
+CODEBUDDY.md
+CLAUDE.md
+.agent/
+.codebuddy/
+
 # Rust / Tauri
 src-tauri/target
 
