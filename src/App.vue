@@ -1,11 +1,33 @@
 <script setup lang="ts">
-const title = "ModernChat Desktop";
+import { onMounted, ref } from 'vue';
+import { checkVersion, CLIENT_IDENTITY, restoreToken } from './core/network';
+
+const version = ref<{ minVersion: string; upgradeRequired: boolean; message?: string } | null>(null);
+const status = ref('检测主仓库连接中…');
+
+onMounted(async () => {
+  restoreToken();
+  try {
+    const r = await checkVersion();
+    version.value = r;
+    status.value = r.upgradeRequired
+      ? (r.message ?? '有新版本可用，请升级后使用')
+      : '主仓库连接正常';
+  } catch {
+    status.value = '无法连接主仓库，请检查服务地址';
+  }
+});
 </script>
 
 <template>
   <main class="container">
-    <h1>{{ title }}</h1>
-    <p>Tauri 2 骨架已就绪，等待接入 ModernChat 业务界面。</p>
+    <h1>ModernChat Desktop</h1>
+    <p>{{ status }}</p>
+    <p v-if="version?.upgradeRequired" class="warn">最低版本 {{ version.minVersion }}</p>
+    <p class="hint">
+      客户端标识：{{ CLIENT_IDENTITY.platform }} / {{ CLIENT_IDENTITY.clientType }} /
+      {{ CLIENT_IDENTITY.appVersion }}
+    </p>
   </main>
 </template>
 
@@ -28,7 +50,12 @@ h1 {
   font-weight: 600;
 }
 
-p {
+.warn {
+  color: #c00000;
+}
+
+.hint {
+  font-size: 12px;
   color: #6b7280;
 }
 
@@ -38,7 +65,7 @@ p {
     background: #16181d;
   }
 
-  p {
+  .hint {
     color: #9ca3af;
   }
 }

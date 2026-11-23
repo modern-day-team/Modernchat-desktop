@@ -36,6 +36,9 @@ src-tauri/           Rust 侧（Tauri 2）
 
 当前仅完成骨架，尚未接入主仓库的业务逻辑。接入时需要决定：
 
-- 认证：复用主仓库 JWT（`Authorization` 头 + `mc_auth` cookie），Cookie 在 Tauri WebView 中的跨域行为需实测；必要时改用 Rust 侧 HTTP 客户端代管会话。
-- 实时链路：主仓库 WS `/ws?token=` 的 Origin 白名单（`FRONTEND_URL`）需加入 `tauri://localhost` / `http://tauri.localhost`，否则握手被拒。
-- 静态资源：主仓库 `web/` 构建 `base: '/app/'`，桌面端若复用其代码需处理 base 路径与 API 绝对地址。
+- **接入契约**：先读主仓库 `docs/客户端接入指南.md`（唯一真源）；`AGENTS.md` 是本地协作契约，不进远端。
+- **认证**：REST 一律 `Authorization: Bearer`（主仓库已按 `FRONTEND_URL` 开启 CORS，REST 不认 cookie）；token 存 Tauri 安全存储。桌面端走二维码登录：`/auth/qr/start` → `status` 轮询 → `confirmed`，由手机端 `/auth/qr/confirm` 确认。
+- **客户端标识**：REST 带 `X-Client-Platform: desktop` / `X-Client-Type: tauri` / `X-Client-Version`，WS 握手带同名 query；服务端据此在会话列表区分设备。
+- **实时链路**：WS `/ws?token=&platform=desktop&clientType=tauri&appVersion=...`；Origin 白名单（`FRONTEND_URL`）需加入 `http://localhost:1420`（dev）与 `https://tauri.localhost`（Windows 生产）/ `tauri://localhost`（macOS），否则握手被拒。收到 `kicked` 帧立即清 token 断线。
+- **会话与版本**：`GET/DELETE /api/me/sessions` 管理设备；启动请求 `/api/client/version` 提示升级（不阻断）。
+- **静态资源**：主仓库 `web/` 构建 `base: '/app/'`，桌面端若复用其代码需处理 base 路径与 API 绝对地址。
