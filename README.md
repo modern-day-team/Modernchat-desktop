@@ -32,6 +32,12 @@ src-tauri/           Rust 侧（Tauri 2）
 
 `identifier` 为 `com.modernchat.desktop`，与主仓库移动端 `com.modernchat` 前缀一致。
 
+## 已实现功能
+
+扫码登录后进入最小聊天界面：会话列表 → 选会话看历史（最近 30 条）→ 发文本消息 → WS `message` 帧实时入列。发送用 optimistic 入列 + `clientMsgId` 去重替换；WS 25s 心跳 + 8s pong 超时 + 指数退避重连（重连后自动重拉会话列表）。`kicked` 帧清本地 token 并回登录页。
+
+**尚未接入**：图片/语音、引用/转发/@、已读回执、搜索、插件、多端同步等（主仓库协议已支持，按后续分项接入）。
+
 ## 视觉约定
 
 `src/assets/main.css` 的 `--mc-*` 令牌与主仓库 `docs/UI设计方案.md` §3.0 跨端色板一致；组件只引用令牌，不硬编码色值/圆角/字号。

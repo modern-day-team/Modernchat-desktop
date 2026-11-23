@@ -32,6 +32,54 @@ export function qrPayload(ticket: string) {
   return `${QR_BASE.replace(/\/$/, '')}/app/qr/${ticket}`
 }
 
+/** 当前登录用户（用于区分自己/他人消息气泡）。 */
+export interface Me {
+  id: number
+  username: string
+  nickname?: string
+}
+
+export function fetchMe() {
+  return request<Me>('/me')
+}
+
+// ---- 会话与消息 ----
+
+/** 会话行（只取最小闭环需要的字段，与 proto.ts Conversation 对齐）。 */
+export interface Conversation {
+  id: number
+  type: number // 1=单聊 2=群聊 3=系统公告（不展示）
+  name: string
+  peer?: { id: number; nickname: string; avatarColor?: string }
+  lastMessagePreview?: string
+  lastMessageAt?: string
+  unreadCount?: number
+  pinned?: boolean
+}
+
+export interface Message {
+  id: number
+  conversationId: number
+  senderId: number
+  clientMsgId?: string
+  msgType: string
+  content: string
+  createdAt: string
+  pending?: boolean
+  failed?: boolean
+}
+
+export function listConversations() {
+  return request<Conversation[]>('/conversations')
+}
+
+export function listMessages(convId: number, limit = 30) {
+  const q = new URLSearchParams({ limit: String(limit) })
+  return request<{ messages: Message[]; hasMore: boolean }>(
+    `/conversations/${convId}/messages?${q.toString()}`,
+  )
+}
+
 // ---- 会话管理 ----
 
 export interface UserSession {
