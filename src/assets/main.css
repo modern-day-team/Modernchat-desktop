@@ -1,0 +1,68 @@
+/* 桌面端设计令牌：与主仓库 docs/UI设计方案.md §3.0 跨端色板对齐。
+ * WebView 无 TDesign 依赖，这里直接定义 --mc-* 语义令牌，组件只引用令牌。 */
+:root {
+  --mc-brand: #0052d9;
+  --mc-brand-hover: #0043b8;
+  --mc-link: var(--mc-brand);
+
+  --mc-bg-page: #f7f8fa;
+  --mc-bg-container: #ffffff;
+  --mc-bg-raised: #f2f3f5;
+
+  --mc-text: #141821;
+  --mc-text-muted: #4b5464;
+  --mc-text-faint: #79818f;
+
+  --mc-hairline: rgba(15, 23, 42, 0.08);
+  --mc-danger: #d64949;
+  --mc-success: #2ba471;
+
+  --mc-fs-caption: 11px;
+  --mc-fs-sm: 12px;
+  --mc-fs-body: 13px;
+  --mc-fs-emphasis: 14px;
+  --mc-fs-title: 16px;
+  --mc-fs-heading: 20px;
+  --mc-fs-display: 26px;
+
+  --mc-radius-sm: 6px;
+  --mc-radius-md: 10px;
+  --mc-radius-lg: 14px;
+  --mc-radius-pill: 999px;
+
+  --mc-dur-instant: 120ms;
+  --mc-dur-base: 200ms;
+  --mc-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[theme-mode='dark'] {
+  --mc-brand: #7cb8ff;
+  --mc-brand-hover: #9ccaff;
+
+  --mc-bg-page: #101216;
+  --mc-bg-container: #1f2229;
+  --mc-bg-raised: #262a32;
+
+  --mc-text: #e9ecf2;
+  --mc-text-muted: #a8b0be;
+  --mc-text-faint: #7d8696;
+
+  --mc-hairline: rgba(255, 255, 255, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mc-brand: #7cb8ff;
+    --mc-brand-hover: #9ccaff;
+
+    --mc-bg-page: #101216;
+    --mc-bg-container: #1f2229;
+    --mc-bg-raised: #262a32;
+
+    --mc-text: #e9ecf2;
+    --mc-text-muted: #a8b0be;
+    --mc-text-faint: #7d8696;
+
+    --mc-hairline: rgba(255, 255, 255, 0.08);
+  }
+}

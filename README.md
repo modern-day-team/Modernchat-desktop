@@ -32,6 +32,10 @@ src-tauri/           Rust 侧（Tauri 2）
 
 `identifier` 为 `com.modernchat.desktop`，与主仓库移动端 `com.modernchat` 前缀一致。
 
+## 视觉约定
+
+`src/assets/main.css` 的 `--mc-*` 令牌与主仓库 `docs/UI设计方案.md` §3.0 跨端色板一致；组件只引用令牌，不硬编码色值/圆角/字号。
+
 ## 架构约定
 
 `core/network/http.ts` 只做传输（token + REST），业务 API 在 `core/network/api.ts`，扫码流程编排在 `composables/useQrLogin.ts`，组件只消费状态与事件。服务地址只在 `core/network/config.ts` 一处定义：API 根 `VITE_API_BASE`、二维码站点前缀 `VITE_QR_BASE`（默认同 API 根）。本仓库可脱离主仓库独立运行，联合时只走 REST / WS / JWT 契约。

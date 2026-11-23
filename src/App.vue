@@ -46,19 +46,19 @@ onMounted(async () => {
   gap: 12px;
   text-align: center;
   font-family: Inter, "Segoe UI", Avenir, Helvetica, Arial, sans-serif;
-  color: #1a1a1a;
-  background: #f6f7f9;
+  color: var(--mc-text);
+  background: var(--mc-bg-page);
 }
 
 h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: var(--mc-fs-display);
   font-weight: 600;
 }
 
 .warn {
   margin: 0;
-  color: #c00000;
+  color: var(--mc-danger);
 }
 
 .logged-in p {
@@ -66,18 +66,7 @@ h1 {
 }
 
 .hint {
-  font-size: 12px;
-  color: #6b7280;
-}
-
-@media (prefers-color-scheme: dark) {
-  .container {
-    color: #f6f6f6;
-    background: #16181d;
-  }
-
-  .hint {
-    color: #9ca3af;
-  }
+  font-size: var(--mc-fs-sm);
+  color: var(--mc-text-faint);
 }
 </style>

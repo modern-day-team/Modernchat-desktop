@@ -23,13 +23,13 @@ const { qrImage, state, message, secondsLeft, start } = useQrLogin(() => emit('l
   align-items: center;
   gap: 12px;
   padding: 24px;
-  border-radius: 12px;
-  background: var(--mc-surface, #ffffff);
+  border-radius: var(--mc-radius-lg);
+  background: var(--mc-bg-container);
 }
 
 .qr h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--mc-fs-title);
 }
 
 .qr__image,
@@ -38,39 +38,28 @@ const { qrImage, state, message, secondsLeft, start } = useQrLogin(() => emit('l
   height: 220px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--mc-hairline, #e5e7eb);
-  border-radius: 8px;
+  border: 1px solid var(--mc-hairline);
+  border-radius: var(--mc-radius-md);
 }
 
 .qr__message {
   margin: 0;
-  font-size: 13px;
-  color: var(--mc-text-muted, #6b7280);
+  font-size: var(--mc-fs-body);
+  color: var(--mc-text-muted);
 }
 
 .qr__hint {
   margin: 0;
-  font-size: 12px;
-  color: var(--mc-text-muted, #6b7280);
+  font-size: var(--mc-fs-sm);
+  color: var(--mc-text-faint);
 }
 
 .qr__retry {
   border: none;
   background: none;
-  color: var(--mc-link, #0052d9);
+  color: var(--mc-link);
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--mc-fs-body);
   padding: 4px 8px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .qr {
-    background: #1f2229;
-  }
-
-  .qr__image,
-  .qr__placeholder {
-    border-color: #3a3f4a;
-  }
 }
 </style>
