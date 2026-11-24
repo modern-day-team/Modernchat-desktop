@@ -2,6 +2,7 @@
 
 ## [未发布]
 
+- fix(lint)：补齐 `oxlint` / `eslint` 配置与依赖（与主仓库 web 同体系，新增 `npm run lint`），CI web job 增加 lint 门禁；移除 `vite-env.d.ts` 里过时的 `.vue` 模块声明（`{}` + `any` 触发 3 条 lint 错误），保留 Vite 客户端类型引用
 - test(审计整改)：新增 Vitest 测试框架与 WS 下行帧解析单测（合法帧 / pong / kicked 中文原因 / 非法 JSON / 缺 type / 未知类型）；`parseFrame` 从 `onmessage` 提取为纯函数，行为不变
 - ci：新增 GitHub Actions——web 任务跑 `npm test` + `npm run build`，rust 任务在 Windows 跑 `cargo fmt --check` + `cargo clippy -D warnings` + `cargo test`
 

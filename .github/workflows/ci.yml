@@ -16,6 +16,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - name: Lint（只检查不改写）
+        run: |
+          npx oxlint .
+          npx eslint .
       - run: npm test
       - run: npm run build
 
