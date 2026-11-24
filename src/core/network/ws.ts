@@ -10,6 +10,16 @@ const HEARTBEAT_INTERVAL = 25_000
 const PONG_TIMEOUT = 8_000
 const MAX_RECONNECT_DELAY = 30_000
 
+/** 解析下行帧：非法 JSON 返回 null（忽略），合法帧原样返回。独立成纯函数便于回归测试。 */
+export function parseFrame(data: unknown): WsFrame | null {
+  try {
+    const frame = JSON.parse(data as string) as WsFrame
+    return frame && typeof frame.type === 'string' ? frame : null
+  } catch {
+    return null
+  }
+}
+
 /** WS 客户端：握手带客户端标识，25s 心跳 + 8s pong 超时 + 指数退避重连。
  *  kicked（强制下线）不重连，由调用方回登录页。 */
 export class WsClient {
@@ -59,12 +69,8 @@ export class WsClient {
     }
 
     ws.onmessage = (ev) => {
-      let frame: WsFrame
-      try {
-        frame = JSON.parse(ev.data as string) as WsFrame
-      } catch {
-        return
-      }
+      const frame = parseFrame(ev.data)
+      if (!frame) return
       if (frame.type === 'pong') {
         if (this.pongTimer) window.clearTimeout(this.pongTimer)
         this.pongTimer = null
