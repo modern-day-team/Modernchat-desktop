@@ -53,6 +53,15 @@ src-tauri/           Rust 侧（Tauri 2）
 - **访问令牌只存系统钥匙串**：`save_token` / `load_token` / `clear_token` 三个 Tauri 命令走 Rust `keyring`（Windows 凭据管理器 / macOS Keychain / Linux Secret Service）；**不写 localStorage、不写日志文件**。纯浏览器 `npm run dev` 无 Tauri runtime 时只留内存态，刷新即失效。
 - 扫码登录票据经 POST body 轮询，不进 URL；二维码载荷里的票据 5 分钟一次性，服务端首轮询即消费。
 
+## 发布
+
+`v*` tag 或手动触发 `.github/workflows/release.yml`，Windows/macOS 都要求签名 secret，缺失则失败，不会产出 unsigned 包：
+
+- Windows：`WINDOWS_CERTIFICATE_BASE64`（PFX base64）、`WINDOWS_CERTIFICATE_PASSWORD`
+- macOS：`MACOS_CERTIFICATE_P12_BASE64`、`MACOS_CERTIFICATE_PASSWORD`、`MACOS_SIGNING_IDENTITY`、`APPLE_ID`、`APPLE_APP_SPECIFIC_PASSWORD`、`APPLE_TEAM_ID`，可选 `MACOS_KEYCHAIN_PASSWORD`
+
+产物为 Windows MSI/NSIS 与 macOS DMG；Release 工作流统一发布 GitHub Release 附件。
+
 ## 后续接入
 
 当前仅完成骨架，尚未接入主仓库的业务逻辑。接入时需要决定：
