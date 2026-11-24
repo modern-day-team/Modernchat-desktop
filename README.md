@@ -22,7 +22,7 @@ cd src-tauri; cargo check    # 仅检查 Rust 侧
 ## 结构
 
 ```
-src/                 Vue 3 前端（当前为脚手架示例页）
+src/                 Vue 3 前端（扫码登录与聊天业务）
 src-tauri/           Rust 侧（Tauri 2）
   tauri.conf.json    应用配置：productName / identifier / 窗口 / 打包图标
   src/main.rs        Windows 下隐藏控制台，调用 lib::run()
@@ -64,7 +64,7 @@ src-tauri/           Rust 侧（Tauri 2）
 
 ## 后续接入
 
-当前仅完成骨架，尚未接入主仓库的业务逻辑。接入时需要决定：
+当前已接入扫码登录与聊天闭环；后续按能力清单继续扩展。接入时需要决定：
 
 - **接入契约**：先读主仓库 `docs/客户端接入指南.md`（唯一真源）；`AGENTS.md` 是本地协作契约，不进远端。
 - **认证**：REST 一律 `Authorization: Bearer`（主仓库已按 `FRONTEND_URL` 开启 CORS，REST 不认 cookie）；token 存 Tauri 安全存储。桌面端走二维码登录：`/auth/qr/start` → `status` 轮询 → `confirmed`，由手机端 `/auth/qr/confirm` 确认。
