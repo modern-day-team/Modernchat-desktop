@@ -2,6 +2,7 @@
 
 ## [未发布]
 
+- feat(契约)：接入主仓库跨端契约金样本——`contracts/ws-frames.json` 为 Modernchat-new `contracts/` 的同步副本，`ws.test.ts` 新增金样本驱动的回归测试（服务端全帧解析口径、message/recall/update/read/typing 字段逐一核对、上行帧键集合不超契约）；CI 新增 `scripts/check-contracts.mjs` 指纹校验（LF 归一化 SHA-256，跨平台确定），副本被手改而指纹未更新会挂 CI。同步流程见 `contracts/README.md`，契约总览见主仓库 `docs/项目组架构与集成.md`
 - docs：修正 README 中“脚手架示例页/仅完成骨架”的过时描述，使其与已实现的聊天闭环一致
 - feat(release)：新增签名发布工作流（`v*` tag / 手动触发）——Android 由 GitHub Secrets 生成正式 key.properties 并验签；iOS 导入分发证书与 provisioning profile 生成签名 IPA；Windows 用 PFX 签 MSI/NSIS，macOS 用 Developer ID 签名并公证 DMG；缺任一签名 Secret 即失败，不回退 unsigned 包
 - fix(lint)：补齐 `oxlint` / `eslint` 配置与依赖（与主仓库 web 同体系，新增 `npm run lint`），CI web job 增加 lint 门禁；移除 `vite-env.d.ts` 里过时的 `.vue` 模块声明（`{}` + `any` 触发 3 条 lint 错误），保留 Vite 客户端类型引用

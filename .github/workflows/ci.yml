@@ -16,6 +16,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - name: 契约金样本指纹校验（防本地手改副本）
+        run: node scripts/check-contracts.mjs contracts/ws-frames.json contracts/ws-frames.sha256
       - name: Lint（只检查不改写）
         run: |
           npx oxlint .
